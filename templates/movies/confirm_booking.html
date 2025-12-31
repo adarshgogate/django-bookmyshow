@@ -1,0 +1,28 @@
+{% extends "users/basic.html" %}
+{% block content %}
+
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="mb-4">Confirm Your Booking</h3>
+          <p><strong>Movie:</strong> {{ booking.movie.name }}</p>
+          <p><strong>Theater:</strong> {{ booking.theater.name }}</p>
+          <p><strong>Seat:</strong> {{ booking.seat.seat_number }}</p>
+          <p><strong>Price:</strong> ₹500</p>
+
+          <!-- ✅ Stripe payment button -->
+          <form action="{% url 'create_checkout_session' booking.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-lg">
+              Pay with Stripe
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

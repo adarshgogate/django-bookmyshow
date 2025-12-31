@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .ticket-box {
+        border: 1px solid #ddd;
+        padding: 16px;
+        border-radius: 8px;
+      }
+      .label {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Ticket Confirmation</h2>
+    <p>
+      Hello {{ user_name }}, your booking <strong>#{{ booking_id }}</strong> was
+      successful.
+    </p>
+
+    <div class="ticket-box">
+      <p><strong>Booking ID:</strong> {{ booking_id }}</p>
+      <p><strong>Movie:</strong> {{ movie_name }}</p>
+      <p><strong>Theater:</strong> {{ theater_name }}</p>
+      <p><strong>Seat:</strong> {{ seat_number }}</p>
+      {% if show_time %}
+      <p><strong>Show Time:</strong> {{ show_time }}</p>
+      {% endif %}
+    </div>
+
+    <p>Keep this email for entry. Enjoy your show!</p>
+  </body>
+</html>

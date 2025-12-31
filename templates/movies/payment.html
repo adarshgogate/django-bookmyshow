@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stripe Payment</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+    .btn { padding: 12px 24px; background: #6772e5; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+    .btn:hover { background: #5469d4; }
+  </style>
+</head>
+<body>
+  <h1>🎬 BookMySeat Payment</h1>
+  <p>Click below to pay securely with Stripe.</p>
+  <form action="{% url 'create_checkout_session' booking.id %}" method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn">Pay with Stripe</button>
+  </form>
+</body>
+</html>

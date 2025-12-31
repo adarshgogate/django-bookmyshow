@@ -1,0 +1,159 @@
+{% extends "users/basic.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">Movies</h1>
+
+    <!-- Search Bar -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <form method="GET" action="{% url 'movie_list' %}" class="search-bar">
+                <div class="input-group">
+                    <input
+                        class="form-control form-control-lg"
+                        name="search"
+                        placeholder="Search for Movies, Events, Plays, Sports and Activities"
+                        type="text"
+                        value="{{ request.GET.search|default_if_none:'' }}"
+                        aria-label="Search for movies"
+                    />
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>  
+
+    <!-- Genre & Language Filters -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-10">
+            <form method="GET" action="{% url 'movie_list' %}" class="row g-3">
+                <input type="hidden" name="search" value="{{ request.GET.search }}">
+
+                <div class="col-md-4">
+                    <select name="genre" class="form-control">
+                        <option value="">All Genres</option>
+                        <option value="Action">Action</option>
+                        <option value="Comedy">Comedy</option>
+                        <option value="Drama">Drama</option>
+                        <option value="Thriller">Thriller</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <select name="language" class="form-control">
+                        <option value="">All Languages</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="English">English</option>
+                        <option value="Kannada">Kannada</option>
+                        <option value="Tamil">Tamil</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Movie Cards -->
+    <div class="row" id="movieList">
+        {% for movie in movies %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.name }}" style="height: 300px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.name }}</h5>
+                    <p class="card-text">
+                        <i class="fas fa-star text-warning"></i> {{ movie.rating }}
+                    </p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-users"></i> Cast: {{ movie.cast }}
+                        </small>
+                    </p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-film"></i> Genre: {{ movie.genre }} | Language: {{ movie.language }}
+                        </small>
+                    </p>
+
+                    <!-- Trailer Embed -->
+                    {% if movie.embed_url %}
+                    <div class="trailer mt-3">
+                        <iframe 
+                            src="{{ movie.embed_url }}" 
+                            title="Trailer for {{ movie.name }}"
+                            style="width: 100%; aspect-ratio: 16/9; border: none;"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="{% url 'theater_list' movie.id %}" class="btn btn-outline-primary btn-block">
+                        View Theaters <i class="fas fa-chevron-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p class="lead">No movies found. Try a different search term.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+    .card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+    .trailer iframe {
+        border-radius: 4px;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Add animation to cards on hover
+        $('.card').hover(
+            function() { $(this).addClass('shadow'); },
+            function() { $(this).removeClass('shadow'); }
+        );
+
+        // Implement client-side filtering
+        $('input[name="search"]').on('input', function() {
+            var searchTerm = $(this).val().toLowerCase();
+            $('#movieList .col-md-4').each(function() {
+                var movieTitle = $(this).find('.card-title').text().toLowerCase();
+                if (movieTitle.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

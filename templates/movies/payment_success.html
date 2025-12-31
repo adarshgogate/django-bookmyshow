@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Successful</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0fff0; text-align: center; padding: 50px; }
+        .card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); display: inline-block; }
+        h1 { color: #28a745; }
+        p { font-size: 16px; }
+        .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #28a745; color: #fff; text-decoration: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎉 Payment Successful!</h1>
+        <p>Thank you, {{ booking.user.username }}. Your booking has been confirmed.</p>
+        <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+        <p><strong>Movie:</strong> {{ booking.movie.name }}</p>
+        <p><strong>Theater:</strong> {{ booking.theater.name }}</p>
+        <p><strong>Seat:</strong> {{ booking.seat.seat_number }}</p>
+        <a href="{% url 'profile' %}" class="btn">Go to My Profile</a>
+    </div>
+</body>
+</html>

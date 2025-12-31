@@ -1,0 +1,11 @@
+<button id="checkout-button">Pay Now</button>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe = Stripe("{{ STRIPE_PUBLISHABLE_KEY }}");  <!-- ✅ publishable key here -->
+
+  document.getElementById("checkout-button").addEventListener("click", function () {
+    fetch("/create-checkout-session/{{ booking.id }}/", { method: "POST" })
+      .then(response => response.json())
+      .then(session => stripe.redirectToCheckout({ sessionId: session.id }));
+  });
+</script>
