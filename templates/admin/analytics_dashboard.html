@@ -1,0 +1,61 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>📊 Analytics Dashboard</h1>
+
+<div class="card">
+  <h2>Total Revenue</h2>
+  <p>₹{{ total_revenue }}</p>
+</div>
+
+<div class="card">
+  <h2>Most Popular Movies</h2>
+  <ul>
+    {% for movie in popular_movies %}
+      <li>{{ movie.movie__name }} — {{ movie.total }} bookings</li>
+    {% endfor %}
+  </ul>
+  <canvas id="moviesChart" width="400" height="200"></canvas>
+</div>
+
+<div class="card">
+  <h2>Busiest Theaters</h2>
+  <ul>
+    {% for theater in busiest_theaters %}
+      <li>{{ theater.theater__name }} — {{ theater.total }} bookings</li>
+    {% endfor %}
+  </ul>
+  <canvas id="theatersChart" width="400" height="200"></canvas>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Movies Chart
+  const moviesCtx = document.getElementById('moviesChart');
+  new Chart(moviesCtx, {
+    type: 'bar',
+    data: {
+      labels: [{% for movie in popular_movies %}"{{ movie.movie__name }}",{% endfor %}],
+      datasets: [{
+        label: 'Bookings',
+        data: [{% for movie in popular_movies %}{{ movie.total }},{% endfor %}],
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      }]
+    }
+  });
+
+  // Theaters Chart
+  const theatersCtx = document.getElementById('theatersChart');
+  new Chart(theatersCtx, {
+    type: 'bar',
+    data: {
+      labels: [{% for theater in busiest_theaters %}"{{ theater.theater__name }}",{% endfor %}],
+      datasets: [{
+        label: 'Bookings',
+        data: [{% for theater in busiest_theaters %}{{ theater.total }},{% endfor %}],
+        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+      }]
+    }
+  });
+</script>
+{% endblock %}

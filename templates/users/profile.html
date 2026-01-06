@@ -62,7 +62,12 @@
                       <h5 class="card-title">{{ booking.movie.name }}</h5>
                       <p class="card-text">
                         <i class="fas fa-film me-2 text-muted"> </i>  {{ booking.theater.name }}<br>
-                        <i class="fas fa-chair me-2 text-muted"> </i>  Seat: {{ booking.seat.seat_number }}<br>
+                        <i class="fas fa-chair me-2 text-muted"> </i> Seats:
+                          {% for seat in booking.seats.all %}
+                          {{ seat.seat_number }}{% if not forloop.last %}, {% endif %}
+                          {% endfor %}
+
+<br>
                         <i class="far fa-clock me-2 text-muted"> </i>  {{ booking.booked_at|date:"F d, Y H:i" }}
                       </p>
                     </div>

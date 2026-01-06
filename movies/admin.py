@@ -26,4 +26,7 @@ class SeatAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ['user', 'seat', 'movie','theater','booked_at','status']
+    list_display = ['user', 'movie','theater','booked_at','status']
+    def display_seats(self, obj):
+        return ", ".join([seat.seat_number for seat in obj.seats.all()])
+    display_seats.short_description = "Seats"

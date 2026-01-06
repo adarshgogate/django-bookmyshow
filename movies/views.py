@@ -12,10 +12,13 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import reverse
 from django.core.mail import send_mail
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Sum, Count, F
+from django.contrib.admin.views.decorators import staff_member_required
 
 # stripe integration
 stripe.api_key = settings.STRIPE_SECRET_KEY
-
 
 def movie_list(request):
     search_query = request.GET.get('search')
@@ -119,19 +122,57 @@ def create_checkout_session(request, booking_id):
 
     return redirect(session.url, code=303)
 
+from django.db import transaction
+from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect, render
+from django.core.mail import send_mail
+from movies.models import Booking, Seat
+
+@transaction.atomic
 def stripe_success(request):
     booking_id = request.GET.get("booking_id")
-    booking = get_object_or_404(Booking, id=booking_id)
+    booking = get_object_or_404(Booking.objects.select_for_update(), id=booking_id)
 
-    booking.seat.is_booked = True
-    booking.seat.save()
+    # Release expired reservations for these seats (queue cleanup)
+    expired_reservations = Seat.objects.filter(
+        is_reserved=True,
+        reserved_until__lt=timezone.now(),
+        id__in=booking.seats.values_list("id", flat=True)   # ✅ filter by Seat IDs
+    )
+    for seat in expired_reservations:
+        seat.is_reserved = False
+        seat.reserved_until = None
+        seat.save()
 
+    # Safety check: ensure seats are not already booked by another confirmed booking
+    conflict = booking.seats.filter(is_booked=True).exists()
+    if conflict:
+        # Handle gracefully (redirect to error page or show message)
+        return redirect("checkout_error")
+
+    # Mark all seats in this booking as booked
+    reserved_seats = booking.seats.filter(is_reserved=True, reserved_until__gte=timezone.now())
+    for seat in reserved_seats:
+        seat.is_reserved = False
+        seat.is_booked = True
+        seat.reserved_until = None
+        seat.save()
+
+    # Update booking status and payment
     booking.status = "confirmed"
+    booking.payment_status = "paid"
     booking.save()
 
+    # Collect seat numbers for email
+    seat_numbers = ", ".join([seat.seat_number for seat in booking.seats.all()])
+
+    # Send confirmation email
     send_mail(
         subject="Booking Confirmed",
-        message=f"Your booking for {booking.movie.name} at {booking.theater.name} (Seat {booking.seat.seat_number}) is confirmed!",
+        message=(
+            f"Your booking for {booking.movie.name} at {booking.theater.name} "
+            f"(Seats: {seat_numbers}) is confirmed!"
+        ),
         from_email="noreply@bookmyseat.com",
         recipient_list=[booking.user.email],
     )
@@ -142,13 +183,9 @@ def stripe_success(request):
 def stripe_cancel(request):
     return render(request, "movies/payment_failed.html")
 
-
-
-
 def book_seats(request, theater_id):
     theater = get_object_or_404(Theater, id=theater_id)
     print("Stripe backend key:", stripe.api_key)
-
 
     if request.method == "POST":
         seat_ids = request.POST.getlist("seats")
@@ -168,16 +205,28 @@ def book_seats(request, theater_id):
                 "seats": theater.seats.all()
             })
 
-        # Mark seats as booked
-        Seat.objects.filter(id__in=seat_ids).update(is_booked=True)
 
-        # Create booking (simplified: one seat)
-        seat = Seat.objects.get(id=seat_ids[0])
+        # Reserve seats for 5 minutes
+        Seat.objects.filter(id__in=seat_ids).update(
+            is_reserved=True,
+            reserved_until=timezone.now() + timedelta(minutes=5)
+        )
         booking = Booking.objects.create(
             user=request.user,
             movie=theater.movie,
             theater=theater,
-            seat=seat
+            status="reserved",
+            payment_status="unpaid"
+        )
+        booking.seats.add(*map(int, seat_ids))
+        booking.save()
+
+
+        print("Booking seats after add:", booking.seats.all())  # Debug
+
+        # ✅ Build seat_numbers string for Stripe
+        seat_numbers = ", ".join(
+            Seat.objects.filter(id__in=seat_ids).values_list("seat_number", flat=True)
         )
 
         # Create Stripe Checkout Session
@@ -187,17 +236,17 @@ def book_seats(request, theater_id):
                 "price_data": {
                     "currency": "inr",
                     "product_data": {
-                        "name": f"{booking.movie.name} - {booking.theater.name} Seat {booking.seat.seat_number}"
+                        "name": f"{booking.movie.name} - {booking.theater.name} Seats {seat_numbers}"
                     },
                     "unit_amount": 50000,  # ₹500 in paise
                 },
-                "quantity": 1,
+                "quantity": len(seat_ids),
             }],
             mode="payment",
-            success_url=request.build_absolute_uri( 
+            success_url=request.build_absolute_uri(
                 reverse("stripe_success") + f"?booking_id={booking.id}"
             ),
-            cancel_url=request.build_absolute_uri(reverse("stripe_cancel")),        
+            cancel_url=request.build_absolute_uri(reverse("stripe_cancel")),
         )
 
         return redirect(session.url, code=303)
@@ -206,6 +255,7 @@ def book_seats(request, theater_id):
         "theaters": theater,
         "seats": theater.seats.all()
     })
+
     
 
 def checkout_page(request, booking_id):
@@ -216,6 +266,50 @@ def checkout_page(request, booking_id):
         "STRIPE_PUBLISHABLE_KEY": settings.STRIPE_PUBLISHABLE_KEY
     })
    
+def reserve_seat(request, seat_id): 
+    seat = get_object_or_404(Seat, id=seat_id) 
+    if not seat.is_reserved and not seat.is_booked: 
+        seat.is_reserved = True 
+        seat.reserved_until = timezone.now() + timedelta(minutes=5)
+        seat.save()
+        # Redirect to checkout or seat selection page
+        return redirect("checkout_page")
+    else:
+        # Seat already reserved or booked 
+        return redirect("seat_selection_page")
+    
+
+@staff_member_required
+def analytics_dashboard(request):
+    # Total revenue (assuming ₹500 per seat)
+    total_revenue = (
+        Booking.objects.filter(status="confirmed")
+        .aggregate(revenue=Count("seats") * 500)["revenue"]
+    )
+
+    # Most popular movies
+    popular_movies = (
+        Booking.objects.filter(status="confirmed")
+        .values("movie__name")
+        .annotate(total=Count("id"))
+        .order_by("-total")[:5]
+    )
+
+    # Busiest theaters
+    busiest_theaters = (
+        Booking.objects.filter(status="confirmed")
+        .values("theater__name")
+        .annotate(total=Count("id"))
+        .order_by("-total")[:5]
+    )
+
+    context = {
+        "total_revenue": total_revenue or 0,
+        "popular_movies": popular_movies,
+        "busiest_theaters": busiest_theaters,
+    }
+    return render(request, "admin/analytics_dashboard.html", context)
+
 
 #razorpay
 # def initiate_payment(request, booking_id):

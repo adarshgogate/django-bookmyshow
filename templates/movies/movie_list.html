@@ -34,23 +34,25 @@
                 <input type="hidden" name="search" value="{{ request.GET.search }}">
 
                 <div class="col-md-4">
-                    <select name="genre" class="form-control">
-                        <option value="">All Genres</option>
-                        <option value="Action">Action</option>
-                        <option value="Comedy">Comedy</option>
-                        <option value="Drama">Drama</option>
-                        <option value="Thriller">Thriller</option>
+                    <select name="genre" class="form-select">
+                    <option value="">All Genres</option>
+                    <option value="Action" {% if request.GET.genre == "Action" %}selected{% endif %}>Action</option>
+                    <option value="Comedy" {% if request.GET.genre == "Comedy" %}selected{% endif %}>Comedy</option>
+                    <option value="Drama" {% if request.GET.genre == "Drama" %}selected{% endif %}>Drama</option>
+                    <option value="Historical" {% if request.GET.genre == "Historical" %}selected{% endif %}>Historical</option>
                     </select>
                 </div>
 
                 <div class="col-md-4">
-                    <select name="language" class="form-control">
-                        <option value="">All Languages</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="English">English</option>
-                        <option value="Kannada">Kannada</option>
-                        <option value="Tamil">Tamil</option>
+                   <select name="language" class="form-select">
+                    <option value="">All Languages</option>
+                    <option value="English" {% if request.GET.language == "English" %}selected{% endif %}>English</option>
+                    <option value="Kannada" {% if request.GET.language == "Kannada" %}selected{% endif %}>Kannada</option>
+                    <option value="Tamil" {% if request.GET.language == "Tamil" %}selected{% endif %}>Tamil</option>
+                    <option value="Telugu" {% if request.GET.language == "Telugu" %}selected{% endif %}>Telugu</option>
+                    <option value="Hindi" {% if request.GET.language == "Hindi" %}selected{% endif %}>Hindi</option>
                     </select>
+
                 </div>
 
                 <div class="col-md-2">

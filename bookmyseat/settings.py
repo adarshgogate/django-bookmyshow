@@ -146,3 +146,22 @@ DEFAULT_FROM_EMAIL = 'noreply@bookmyseat.com'
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = config("STRIPE_PUBLISHABLE_KEY")
 
+#celery
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "release-expired-seats-every-minute": {
+        "task": "movies.tasks.release_expired_seats",
+        "schedule": crontab(minute="*"),  # every minute
+    },
+}
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Kolkata"
+CELERY_ENABLE_UTC = True
