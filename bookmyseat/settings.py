@@ -57,7 +57,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 AUTH_USER_MODEL='auth.User'
-EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static"
@@ -136,14 +135,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'gogateadarsh@gmail.com'
 EMAIL_HOST_PASSWORD = 'somq nxpz mmsi eenz'
 DEFAULT_FROM_EMAIL = 'noreply@bookmyseat.com'
-
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = config("SENDGRID_API_KEY")
 
 #STRIPE DETAILS
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")

@@ -4,3 +4,5 @@ __pycache__/
 
 # Environment & secrets
 .env
+
+.venv/
