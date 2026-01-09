@@ -16,7 +16,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Sum, Count, F
 from django.contrib.admin.views.decorators import staff_member_required
-
+from movies.utils.email import send_ticket_confirmation
 # stripe integration
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -85,17 +85,17 @@ def theater_list(request, movie_id):
 #     return render(request, 'movies/seat_selection.html', {'theaters': theaters, 'seats': seats})
 
 def confirm_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id) # removed user check
-    print("Before update:", booking.status)
+    booking = get_object_or_404(Booking, id=booking_id)
     booking.status = "confirmed"
     booking.save()
-    print("After update:", booking.status) 
+
     try:
-        send_ticket_confirmation(booking.user, booking) 
-        print(f"✅ Email sent to {booking.user.email} for booking #{booking.id}") 
-    except Exception as e: 
-        print(f"❌ Email failed for booking #{booking.id}: {e}") 
-    return redirect('profile') # or 'booking_success' if you have that route
+        send_ticket_confirmation(booking.user, booking)
+        print(f"✅ Email sent to {booking.user.email} for booking #{booking.id}")
+    except Exception as e:
+        print(f"❌ Email failed for booking #{booking.id}: {e}")
+
+    return redirect('profile')
 
 
 

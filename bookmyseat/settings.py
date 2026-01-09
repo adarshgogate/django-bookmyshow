@@ -89,14 +89,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Email backend (SendGrid in production, console locally)
-try:
-    import sendgrid_backend
-    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-    SENDGRID_API_KEY = config("SENDGRID_API_KEY")
-except ImportError:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
+# Email backend using SendGrid SMTP (works locally and on Render)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "apikey"  # literally the string "apikey"
+EMAIL_HOST_PASSWORD = config("SENDGRID_API_KEY")  # set in Render env vars
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@bookmyseat.com")
 
 # Stripe
