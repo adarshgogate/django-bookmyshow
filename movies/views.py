@@ -17,6 +17,30 @@ from datetime import timedelta
 from django.db.models import Sum, Count, F
 from django.contrib.admin.views.decorators import staff_member_required
 from movies.utils.email import send_ticket_confirmation
+from django.core.mail import EmailMultiAlternatives
+import logging
+
+logger = logging.getLogger(__name__)
+
+def send_ticket_confirmation(user, booking):
+    try:
+        subject = f"Booking Confirmation – {booking.event.name}"
+        text_body = f"Hello {user.first_name}, your booking #{booking.id} is confirmed. Seat: {booking.seat_number}"
+        html_body = f"<p>Hello {user.first_name},</p><p>Your booking #{booking.id} is confirmed. Seat: {booking.seat_number}</p>"
+
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=os.getenv("DEFAULT_FROM_EMAIL", "noreply@bookmyseat.com"),
+            to=[user.email],
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send()
+
+        logger.info(f"✅ Email sent to {user.email} for booking #{booking.id}")
+    except Exception as e:
+        logger.error(f"❌ Email failed for booking #{booking.id}: {e}")
+
 # stripe integration
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
