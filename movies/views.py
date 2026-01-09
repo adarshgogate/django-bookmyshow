@@ -176,8 +176,12 @@ def create_checkout_session(request, booking_id):
     )
 
     return redirect(session.url, code=303)
-
 from django.db import transaction
+from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
+from django.core.mail import send_mail
+from decouple import config
+from .models import Booking, Seat
 
 @transaction.atomic
 def stripe_success(request):
@@ -217,11 +221,11 @@ def stripe_success(request):
 
     # Send confirmation email
     try:
-        result = send_mail(
+        send_mail(
             subject="Booking Confirmed",
             message=(
                 f"Hi {booking.user.first_name},\n\n"
-                f"Your booking for {booking.event.name} at {booking.theater.name} "
+                f"Your booking for {booking.movie.name} at {booking.theater.name} "
                 f"(Seats: {seat_numbers}) is confirmed!\n\n"
                 f"Thank you for choosing BookMySeat."
             ),
@@ -229,7 +233,7 @@ def stripe_success(request):
             recipient_list=[booking.user.email],
             fail_silently=False,
         )
-        print("📩 Email send result:", result)
+        print(f"✅ Email sent to {booking.user.email}")
     except Exception as e:
         print(f"❌ Email failed: {e}")
 
