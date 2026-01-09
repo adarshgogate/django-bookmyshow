@@ -96,7 +96,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "apikey"  # literally the string "apikey"
 EMAIL_HOST_PASSWORD = config("SENDGRID_API_KEY")  # set in Render env vars
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@bookmyseat.com")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com")
 
 # Stripe
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")

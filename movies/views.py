@@ -20,20 +20,51 @@ from movies.utils.email import send_ticket_confirmation
 from django.core.mail import EmailMultiAlternatives
 import logging
 
+
+
+logger = logging.getLogger(__name__)
+from django.core.mail import EmailMultiAlternatives
+from decouple import config
+import logging
+
 logger = logging.getLogger(__name__)
 
 def send_ticket_confirmation(user, booking):
     try:
-        subject = f"Booking Confirmation – {booking.event.name}"
-        text_body = f"Hello {user.first_name}, your booking #{booking.id} is confirmed. Seat: {booking.seat_number}"
-        html_body = f"<p>Hello {user.first_name},</p><p>Your booking #{booking.id} is confirmed. Seat: {booking.seat_number}</p>"
+        subject = f"Your Booking Confirmation – {booking.event.name}"
+        from_email = config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com")  # verified sender
+        to_email = user.email
 
-        msg = EmailMultiAlternatives(
-            subject=subject,
-            body=text_body,
-            from_email=os.getenv("DEFAULT_FROM_EMAIL", "noreply@bookmyseat.com"),
-            to=[user.email],
+        text_body = (
+            f"Hi {user.first_name},\n\n"
+            f"Thank you for booking with BookMySeat!\n\n"
+            f"Your booking is confirmed:\n"
+            f"Event: {booking.event.name}\n"
+            f"Date: {booking.event.date.strftime('%B %d, %Y')}\n"
+            f"Seat Number: {booking.seat_number}\n\n"
+            f"We look forward to seeing you!\n\n"
+            f"Best regards,\n"
+            f"The BookMySeat Team"
         )
+
+        html_body = f"""
+        <html>
+          <body>
+            <p>Hi {user.first_name},</p>
+            <p>Thank you for booking with <strong>BookMySeat</strong>!</p>
+            <p>Your booking is confirmed:</p>
+            <ul>
+              <li><strong>Event:</strong> {booking.event.name}</li>
+              <li><strong>Date:</strong> {booking.event.date.strftime('%B %d, %Y')}</li>
+              <li><strong>Seat Number:</strong> {booking.seat_number}</li>
+            </ul>
+            <p>We look forward to seeing you!</p>
+            <p>Best regards,<br>The BookMySeat Team</p>
+          </body>
+        </html>
+        """
+
+        msg = EmailMultiAlternatives(subject, text_body, from_email, [to_email])
         msg.attach_alternative(html_body, "text/html")
         msg.send()
 
@@ -112,7 +143,7 @@ def confirm_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     booking.status = "confirmed"
     booking.save()
-
+    print(f"📌 Confirming booking {booking.id} for user {booking.user.email}")
     try:
         send_ticket_confirmation(booking.user, booking)
         print(f"✅ Email sent to {booking.user.email} for booking #{booking.id}")
@@ -147,34 +178,28 @@ def create_checkout_session(request, booking_id):
     return redirect(session.url, code=303)
 
 from django.db import transaction
-from django.utils import timezone
-from django.shortcuts import get_object_or_404, redirect, render
-from django.core.mail import send_mail
-from movies.models import Booking, Seat
 
 @transaction.atomic
 def stripe_success(request):
     booking_id = request.GET.get("booking_id")
     booking = get_object_or_404(Booking.objects.select_for_update(), id=booking_id)
 
-    # Release expired reservations for these seats (queue cleanup)
+    # Release expired reservations
     expired_reservations = Seat.objects.filter(
         is_reserved=True,
         reserved_until__lt=timezone.now(),
-        id__in=booking.seats.values_list("id", flat=True)   # ✅ filter by Seat IDs
+        id__in=booking.seats.values_list("id", flat=True)
     )
     for seat in expired_reservations:
         seat.is_reserved = False
         seat.reserved_until = None
         seat.save()
 
-    # Safety check: ensure seats are not already booked by another confirmed booking
-    conflict = booking.seats.filter(is_booked=True).exists()
-    if conflict:
-        # Handle gracefully (redirect to error page or show message)
+    # Safety check
+    if booking.seats.filter(is_booked=True).exists():
         return redirect("checkout_error")
 
-    # Mark all seats in this booking as booked
+    # Mark seats as booked
     reserved_seats = booking.seats.filter(is_reserved=True, reserved_until__gte=timezone.now())
     for seat in reserved_seats:
         seat.is_reserved = False
@@ -182,24 +207,31 @@ def stripe_success(request):
         seat.reserved_until = None
         seat.save()
 
-    # Update booking status and payment
+    # Update booking
     booking.status = "confirmed"
     booking.payment_status = "paid"
     booking.save()
 
-    # Collect seat numbers for email
+    # Collect seat numbers
     seat_numbers = ", ".join([seat.seat_number for seat in booking.seats.all()])
 
     # Send confirmation email
-    send_mail(
-        subject="Booking Confirmed",
-        message=(
-            f"Your booking for {booking.movie.name} at {booking.theater.name} "
-            f"(Seats: {seat_numbers}) is confirmed!"
-        ),
-        from_email="noreply@bookmyseat.com",
-        recipient_list=[booking.user.email],
-    )
+    try:
+        result = send_mail(
+            subject="Booking Confirmed",
+            message=(
+                f"Hi {booking.user.first_name},\n\n"
+                f"Your booking for {booking.event.name} at {booking.theater.name} "
+                f"(Seats: {seat_numbers}) is confirmed!\n\n"
+                f"Thank you for choosing BookMySeat."
+            ),
+            from_email=config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com"),
+            recipient_list=[booking.user.email],
+            fail_silently=False,
+        )
+        print("📩 Email send result:", result)
+    except Exception as e:
+        print(f"❌ Email failed: {e}")
 
     return render(request, "movies/payment_success.html", {"booking": booking})
 
