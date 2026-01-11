@@ -215,22 +215,21 @@ def stripe_success(request):
 
     # Send confirmation email safely
     try:
-        send_mail(
-            subject="Booking Confirmed",
-            message=(
-                f"Hi {booking.user.first_name},\n\n"
-                f"Your booking for {getattr(booking, 'movie', None) or getattr(booking, 'event', None)} "
-                f"at {getattr(booking, 'theater', None)} "
-                f"(Seats: {seat_numbers}) is confirmed!\n\n"
-                f"Thank you for choosing BookMySeat."
-            ),
-            from_email=config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com"),
-            recipient_list=[booking.user.email],
-            fail_silently=False,
-        )
-        logger.info(f"✅ Email sent to {booking.user.email}")
-    except Exception as e:
-        logger.error(f"❌ Email failed: {e}")
+    send_mail(
+        subject="Booking Confirmed",
+        message=(
+            f"Hi {booking.user.first_name},\n\n"
+            f"Your booking for {booking.movie.name} at {booking.theater.name} "
+            f"(Seats: {seat_numbers}) is confirmed!\n\n"
+            f"Thank you for choosing BookMySeat."
+        ),
+        from_email=DEFAULT_FROM_EMAIL,
+        recipient_list=[booking.user.email],
+        fail_silently=False,
+    )
+except Exception as e:
+    logger.error(f"❌ Email failed: {e}")
+
 
     return render(request, "movies/payment_success.html", {"booking": booking})
 
