@@ -175,8 +175,8 @@ def create_checkout_session(request, booking_id):
 
     return redirect(session.url, code=303)
 
-
 from django.db import transaction
+
 @transaction.atomic
 def stripe_success(request):
     booking_id = request.GET.get("booking_id")
@@ -213,7 +213,7 @@ def stripe_success(request):
     # Collect seat numbers
     seat_numbers = ", ".join([seat.seat_number for seat in booking.seats.all()])
 
-    # Send confirmation email safely
+    # Send confirmation email via SendGrid
     try:
         send_mail(
             subject="Booking Confirmed",
@@ -223,16 +223,15 @@ def stripe_success(request):
                 f"(Seats: {seat_numbers}) is confirmed!\n\n"
                 f"Thank you for choosing BookMySeat."
             ),
-            from_email=config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com"),
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[booking.user.email],
             fail_silently=False,
         )
+        logger.info(f"✅ Email sent to {booking.user.email}")
     except Exception as e:
         logger.error(f"❌ Email failed: {e}")
 
-
     return render(request, "movies/payment_success.html", {"booking": booking})
-
 
 def stripe_cancel(request):
     return render(request, "movies/payment_failed.html")
