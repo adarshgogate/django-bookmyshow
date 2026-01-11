@@ -89,14 +89,25 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+
+
 # Email backend using SendGrid SMTP (works locally and on Render)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "apikey"  # literally the string "apikey"
-EMAIL_HOST_PASSWORD = config("SENDGRID_API_KEY")
+
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = config("SENDGRID_API_KEY")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com")
+
+# Optional safety
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+SENDGRID_ECHO_TO_STDOUT = True
+
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.sendgrid.net"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = "apikey"  # literally the string "apikey"
+# EMAIL_HOST_PASSWORD = config("SENDGRID_API_KEY")
+# DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com")
 
 # Stripe
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")

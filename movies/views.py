@@ -19,6 +19,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from movies.utils.email import send_ticket_confirmation
 from django.core.mail import EmailMultiAlternatives
 import logging
+from django.db import transaction
+import sendgrid
+from sendgrid.helpers.mail import Mail
 
 
 
@@ -176,6 +179,8 @@ def create_checkout_session(request, booking_id):
     return redirect(session.url, code=303)
 
 from django.db import transaction
+import sendgrid
+from sendgrid.helpers.mail import Email, Content, Mail
 
 @transaction.atomic
 def stripe_success(request):
@@ -213,21 +218,25 @@ def stripe_success(request):
     # Collect seat numbers
     seat_numbers = ", ".join([seat.seat_number for seat in booking.seats.all()])
 
-    # Send confirmation email via SendGrid
+    # Send confirmation email via SendGrid SDK (v3.6.5 syntax)
     try:
-        send_mail(
-            subject="Booking Confirmed",
-            message=(
-                f"Hi {booking.user.first_name},\n\n"
-                f"Your booking for {booking.movie.name} at {booking.theater.name} "
-                f"(Seats: {seat_numbers}) is confirmed!\n\n"
-                f"Thank you for choosing BookMySeat."
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[booking.user.email],
-            fail_silently=False,
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email(settings.DEFAULT_FROM_EMAIL)
+        to_email = Email(booking.user.email)
+        subject = "Booking Confirmed"
+        content = Content(
+            "text/html",
+            f"""
+            <h2>🎬 Booking Confirmation</h2>
+            <p>Hi {booking.user.first_name},</p>
+            <p>Your booking for <b>{booking.movie.name}</b> at <b>{booking.theater.name}</b> is confirmed.</p>
+            <p><b>Seats:</b> {seat_numbers}</p>
+            <p>Thank you for choosing BookMySeat.</p>
+            """
         )
-        logger.info(f"✅ Email sent to {booking.user.email}")
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        logger.info(f"✅ Email sent to {booking.user.email}, status {response.status_code}")
     except Exception as e:
         logger.error(f"❌ Email failed: {e}")
 
