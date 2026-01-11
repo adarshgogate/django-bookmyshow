@@ -176,13 +176,8 @@ def create_checkout_session(request, booking_id):
     )
 
     return redirect(session.url, code=303)
-from django.db import transaction
-from django.shortcuts import get_object_or_404, render, redirect
-from django.utils import timezone
-from django.core.mail import send_mail
-from decouple import config
-from .models import Booking, Seat
 
+from django.db import transaction
 @transaction.atomic
 def stripe_success(request):
     booking_id = request.GET.get("booking_id")
