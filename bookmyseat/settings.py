@@ -64,7 +64,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "bookmyseat.wsgi.application"
 
 # Database (Render Postgres via DATABASE_URL)
-DATABASES = { "default": dj_database_url.config( default=config("DATABASE_URL") ) }
+DATABASES = { "default": dj_database_url.config(default=config("DATABASE_URL")) }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

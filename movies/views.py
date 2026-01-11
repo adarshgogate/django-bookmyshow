@@ -25,9 +25,7 @@ import logging
 logger = logging.getLogger(__name__)
 from django.core.mail import EmailMultiAlternatives
 from decouple import config
-import logging
 
-logger = logging.getLogger(__name__)
 
 def send_ticket_confirmation(user, booking):
     try:
@@ -177,6 +175,7 @@ def create_checkout_session(request, booking_id):
 
     return redirect(session.url, code=303)
 
+
 from django.db import transaction
 @transaction.atomic
 def stripe_success(request):
@@ -214,13 +213,14 @@ def stripe_success(request):
     # Collect seat numbers
     seat_numbers = ", ".join([seat.seat_number for seat in booking.seats.all()])
 
-    # Send confirmation email
+    # Send confirmation email safely
     try:
         send_mail(
             subject="Booking Confirmed",
             message=(
                 f"Hi {booking.user.first_name},\n\n"
-                f"Your booking for {booking.movie.name} at {booking.theater.name} "
+                f"Your booking for {getattr(booking, 'movie', None) or getattr(booking, 'event', None)} "
+                f"at {getattr(booking, 'theater', None)} "
                 f"(Seats: {seat_numbers}) is confirmed!\n\n"
                 f"Thank you for choosing BookMySeat."
             ),
@@ -228,9 +228,9 @@ def stripe_success(request):
             recipient_list=[booking.user.email],
             fail_silently=False,
         )
-        print(f"✅ Email sent to {booking.user.email}")
+        logger.info(f"✅ Email sent to {booking.user.email}")
     except Exception as e:
-        print(f"❌ Email failed: {e}")
+        logger.error(f"❌ Email failed: {e}")
 
     return render(request, "movies/payment_success.html", {"booking": booking})
 
