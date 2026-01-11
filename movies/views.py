@@ -223,7 +223,7 @@ def stripe_success(request):
                 f"(Seats: {seat_numbers}) is confirmed!\n\n"
                 f"Thank you for choosing BookMySeat."
             ),
-            from_email=DEFAULT_FROM_EMAIL,
+            from_email=config("DEFAULT_FROM_EMAIL", default="gogateadarsh@gmail.com"),
             recipient_list=[booking.user.email],
             fail_silently=False,
         )
