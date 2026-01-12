@@ -29,15 +29,6 @@ logger = logging.getLogger(__name__)
 from django.core.mail import EmailMultiAlternatives
 from decouple import config
 
-import os
-from django.http import HttpResponse
-from django.conf import settings
-
-def debug_media(request):
-    files = os.listdir(settings.MEDIA_ROOT / "movies")
-    return HttpResponse("<br>".join(files))
-
-
 def send_ticket_confirmation(user, booking):
     try:
         subject = f"Your Booking Confirmation – {booking.event.name}"
