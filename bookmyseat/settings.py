@@ -69,10 +69,17 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
+
+# Static files
 # Static files
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]  # your app-level static folder
-STATIC_ROOT = BASE_DIR / "staticfiles"    # where collectstatic will put files
+STATICFILES_DIRS = [BASE_DIR / "static"]   # your app-level static folder
+STATIC_ROOT = BASE_DIR / "staticfiles"     # collectstatic target
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -84,10 +91,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
-# Media files
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
 
 
 
