@@ -16,6 +16,6 @@ urlpatterns=[
     path("payment/stripe/cancel/", views.stripe_cancel, name="stripe_cancel"),
     path("create-checkout-session/<int:booking_id>/", views.create_checkout_session, name="create_checkout_session"),
     path("checkout/<int:booking_id>/", views.checkout_page, name="checkout_page"),
-    
+    path("debug/media/", debug_media),
     path("admin/analytics/", views.analytics_dashboard, name="analytics_dashboard"),
 ]
