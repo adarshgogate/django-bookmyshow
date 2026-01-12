@@ -28,6 +28,7 @@ from sendgrid.helpers.mail import Mail
 logger = logging.getLogger(__name__)
 from django.core.mail import EmailMultiAlternatives
 from decouple import config
+
 import os
 from django.http import HttpResponse
 from django.conf import settings
