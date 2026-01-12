@@ -42,7 +42,7 @@
       }
       .trailer iframe {
         width: 100%;
-        aspect-ratio: 16 / 9; /* ✅ keeps correct proportions */
+        aspect-ratio: 16 / 9;
         border: none;
       }
       @media (max-width: 600px) {
@@ -59,15 +59,15 @@
   <body>
     <div class="movie-container">
       <div class="movie-header">
-        {% if movie.image %}
-        <!-- If user uploaded poster -->
-        <img src="{{ movie.image.url }}" alt="{{ movie.name }}" />
+        <!-- Always load posters from static/movies/ -->
+        {% if movie.name == "Rocky Bhai" %}
+          <img src="{% static 'movies/Rocky_bhai.jpeg' %}" alt="Rocky Bhai">
+        {% elif movie.name == "RRR" %}
+          <img src="{% static 'movies/RRR.jpeg' %}" alt="RRR">
+        {% elif movie.name == "3 Idiots" %}
+          <img src="{% static 'movies/3_idiots.jpeg' %}" alt="3 Idiots">
         {% else %}
-        <!-- Fallback to demo static poster -->
-        <img
-          src="{% static 'movies/Rocky_bhai.jpeg' %}"
-          alt="{{ movie.name }}"
-        />
+          <img src="{% static 'movies/default.jpeg' %}" alt="{{ movie.name }}">
         {% endif %}
 
         <div class="movie-info">
@@ -80,22 +80,23 @@
       </div>
 
       {% if movie.description %}
-      <div class="movie-description">
-        <h3>Description</h3>
-        <p>{{ movie.description }}</p>
-      </div>
-      {% endif %} {% if movie.embed_url %}
-      <div class="trailer">
-        <h3>Trailer</h3>
-        <iframe
-          src="{{ movie.embed_url }}"
-          title="YouTube trailer"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen
-        >
-        </iframe>
-      </div>
+        <div class="movie-description">
+          <h3>Description</h3>
+          <p>{{ movie.description }}</p>
+        </div>
+      {% endif %}
+
+      {% if movie.embed_url %}
+        <div class="trailer">
+          <h3>Trailer</h3>
+          <iframe
+            src="{{ movie.embed_url }}"
+            title="YouTube trailer"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+          </iframe>
+        </div>
       {% endif %}
     </div>
   </body>
