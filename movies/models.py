@@ -8,7 +8,6 @@ YOUTUBE_ID_RE = re.compile(
         )
 class Movie(models.Model):
     name= models.CharField(max_length=255)
-    image= models.ImageField(upload_to="movies/")
     rating = models.DecimalField(max_digits=3,decimal_places=1)
     cast= models.TextField()
     description= models.TextField(blank=True,null=True) # optional
