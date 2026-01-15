@@ -6,7 +6,7 @@ from django.utils.html import format_html
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
     list_display = ['name', 'rating', 'genre', 'language', 'trailer_preview','demo_poster'] 
-    fields = ['name', 'image', 'rating', 'cast', 'description', 'genre', 'language', 'trailer_url','demo_poster']
+    fields = ['name', 'rating', 'cast', 'description', 'genre', 'language', 'trailer_url','demo_poster']
     def trailer_preview(self, obj): 
         if obj.embed_url(): 
             return format_html(
