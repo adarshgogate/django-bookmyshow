@@ -1,4 +1,6 @@
 {% extends "users/basic.html" %} {% block content %}
+{% load static %}
+
 <style>
     body {
       font-family: "Arial", sans-serif;
@@ -129,12 +131,12 @@
         <!-- Wrap the card in an anchor to make the entire card clickable -->
         <a href="{% url 'theater_list' movie.id %}" class="text-decoration-none">
           <div class="card h-100">
-            <img
-              src="{{ movie.image.url }}"
-              class="card-img-top"
-              alt="{{ movie.name }}"
-              height="300"
-            />
+            {% if movie.poster_url %}
+  <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.name }}" height="300" />
+{% else %}
+  <img src="{% static 'movies/default.jpeg' %}" class="card-img-top" alt="{{ movie.name }}" height="300" />
+{% endif %}
+
             <div class="card-body d-flex flex-column justify-content-between">
               <h5 class="card-title text-center">{{ movie.name }}</h5>
               <p class="card-text text-center">{{ movie.description }}</p>
