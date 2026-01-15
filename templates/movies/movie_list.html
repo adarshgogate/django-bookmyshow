@@ -1,5 +1,6 @@
-{% extends "users/basic.html" %}
 
+{% extends "users/basic.html" %}
+{% load static %}
 {% block content %}
 <div class="container py-5">
     <h1 class="text-center mb-5">Movies</h1>
@@ -69,7 +70,11 @@
         {% for movie in movies %}
         <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm">
-                <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.name }}" style="height: 300px; object-fit: cover;">
+            {% if movie.poster_url %}
+             <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.name }}" style="height: 300px; object-fit: cover;">
+            {% else %}
+            <img src="{% static 'movies/default.jpeg' %}" class="card-img-top" alt="{{ movie.name }}" style="height: 300px; object-fit: cover;">
+            {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ movie.name }}</h5>
                     <p class="card-text">

@@ -14,7 +14,7 @@ class Movie(models.Model):
     genre = models.CharField(max_length=50, blank=True, null=True)
     language = models.CharField(max_length=50, blank=True, null=True)
     trailer_url = models.URLField(blank=True, null=True)
-    demo_poster = models.CharField(max_length=100, blank=True)
+    poster_url = models.URLField(blank=True)  
     def __str__(self):
         return self.name
 

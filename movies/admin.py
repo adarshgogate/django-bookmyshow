@@ -5,8 +5,8 @@ from django.utils.html import format_html
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
-    list_display = ['name', 'rating', 'genre', 'language', 'trailer_preview','demo_poster'] 
-    fields = ['name', 'rating', 'cast', 'description', 'genre', 'language', 'trailer_url','demo_poster']
+    list_display = ['name', 'rating', 'genre', 'language', 'trailer_preview','poster_preview'] 
+    fields = ['name', 'rating', 'cast', 'description', 'genre', 'language', 'trailer_url','poster_url']
     def trailer_preview(self, obj): 
         if obj.embed_url(): 
             return format_html(
@@ -14,6 +14,10 @@ class MovieAdmin(admin.ModelAdmin):
                 obj.embed_url() 
             )
         return "No trailer"
+    def poster_preview(self, obj):
+        if obj.poster_url: 
+            return format_html('<img src="{}" width="100" />', obj.poster_url)
+        return "No poster"
     
     trailer_preview.short_description = "Trailer"
 @admin.register(Theater)

@@ -60,11 +60,8 @@
     <div class="movie-container">
       <div class="movie-header">
         <!-- Use demo_poster field for static poster -->
-        {% if movie.demo_poster %}
-        <img
-          src="{% static 'movies/' %}{{ movie.demo_poster }}"
-          alt="{{ movie.name }}"
-        />
+        {% if movie.poster_url %}
+        <img src="{{ movie.poster_url }}" alt="{{ movie.name }}" />
         {% else %}
         <img src="{% static 'movies/default.jpeg' %}" alt="{{ movie.name }}" />
         {% endif %}
