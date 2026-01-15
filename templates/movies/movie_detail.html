@@ -16,7 +16,7 @@
         background: #fff;
         padding: 20px;
         border-radius: 6px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       }
       .movie-header {
         display: flex;
@@ -60,7 +60,14 @@
     <div class="movie-container">
       <div class="movie-header">
         <!-- Use demo_poster field for static poster -->
-        <img src="{% static 'movies/' %}{{ movie.demo_poster }}" alt="{{ movie.name }}">
+        {% if movie.demo_poster %}
+        <img
+          src="{% static 'movies/' %}{{ movie.demo_poster }}"
+          alt="{{ movie.name }}"
+        />
+        {% else %}
+        <img src="{% static 'movies/default.jpeg' %}" alt="{{ movie.name }}" />
+        {% endif %}
 
         <div class="movie-info">
           <h2>{{ movie.name }}</h2>
@@ -72,23 +79,22 @@
       </div>
 
       {% if movie.description %}
-        <div class="movie-description">
-          <h3>Description</h3>
-          <p>{{ movie.description }}</p>
-        </div>
-      {% endif %}
-
-      {% if movie.embed_url %}
-        <div class="trailer">
-          <h3>Trailer</h3>
-          <iframe
-            src="{{ movie.embed_url }}"
-            title="YouTube trailer"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen>
-          </iframe>
-        </div>
+      <div class="movie-description">
+        <h3>Description</h3>
+        <p>{{ movie.description }}</p>
+      </div>
+      {% endif %} {% if movie.embed_url %}
+      <div class="trailer">
+        <h3>Trailer</h3>
+        <iframe
+          src="{{ movie.embed_url }}"
+          title="YouTube trailer"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        >
+        </iframe>
+      </div>
       {% endif %}
     </div>
   </body>
