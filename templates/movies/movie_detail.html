@@ -59,16 +59,8 @@
   <body>
     <div class="movie-container">
       <div class="movie-header">
-        <!-- Static posters mapped by movie name -->
-        {% if movie.name == "Rocky Bhai" %}
-          <img src="{% static 'movies/Rocky_bhai.jpeg' %}" alt="Rocky Bhai">
-        {% elif movie.name == "RRR" %}
-          <img src="{% static 'movies/RRR.jpeg' %}" alt="RRR">
-        {% elif movie.name == "3 Idiots" %}
-          <img src="{% static 'movies/3_idiots.jpeg' %}" alt="3 Idiots">
-        {% else %}
-          <img src="{% static 'movies/default.jpeg' %}" alt="{{ movie.name }}">
-        {% endif %}
+        <!-- Use demo_poster field for static poster -->
+        <img src="{% static 'movies/' %}{{ movie.demo_poster }}" alt="{{ movie.name }}">
 
         <div class="movie-info">
           <h2>{{ movie.name }}</h2>
