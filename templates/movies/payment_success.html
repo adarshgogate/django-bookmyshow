@@ -18,7 +18,17 @@
         <p><strong>Booking ID:</strong> {{ booking.id }}</p>
         <p><strong>Movie:</strong> {{ booking.movie.name }}</p>
         <p><strong>Theater:</strong> {{ booking.theater.name }}</p>
-        <p><strong>Seat:</strong> {{ booking.seat.seat_number }}</p>
+        
+        <!-- ✅ Show all seats -->
+        <p><strong>Seats:</strong>
+            {% for seat in booking.seats.all %}
+                {{ seat.seat_number }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+
+        <!-- ✅ Add reassurance line -->
+        <p><i>📩 If you don’t see your confirmation email in your inbox, please check your Spam or Promotions folder and mark it as “Not Spam”.</i></p>
+
         <a href="{% url 'profile' %}" class="btn">Go to My Profile</a>
     </div>
 </body>

@@ -21,7 +21,6 @@ from django.core.mail import EmailMultiAlternatives
 import logging
 from django.db import transaction
 import sendgrid
-from sendgrid.helpers.mail import Mail
 
 
 
@@ -177,9 +176,8 @@ def create_checkout_session(request, booking_id):
 
     return redirect(session.url, code=303)
 
-from django.db import transaction
-import sendgrid
-from sendgrid.helpers.mail import Email, Content, Mail
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 @transaction.atomic
 def stripe_success(request):
@@ -217,9 +215,9 @@ def stripe_success(request):
     # Collect seat numbers
     seat_numbers = ", ".join([seat.seat_number for seat in booking.seats.all()])
 
-    # Send confirmation email via SendGrid SDK (v3.6.5 syntax)
+    # ✅ Send confirmation email via SendGrid
     try:
-        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+        sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
         from_email = settings.DEFAULT_FROM_EMAIL
         to_email = booking.user.email
         subject = "Booking Confirmed"
@@ -230,9 +228,7 @@ def stripe_success(request):
             <p>Your booking for <b>{booking.movie.name}</b> at <b>{booking.theater.name}</b> is confirmed.</p>
             <p><b>Seats:</b> {seat_numbers}</p>
             <p>Thank you for choosing <b>BookMySeat</b>.</p>
-            <p><i>📩 Your confirmation email will arrive shortly. 
-            If you don’t see it in your inbox, please check your Spam or Promotions folder 
-            and mark it as “Not Spam”.</i></p>
+            <p><i>📩 If you don’t see this email in your inbox, please check your Spam or Promotions folder and mark it as “Not Spam” to ensure future delivery.</i></p>
         """
 
         mail = Mail(
@@ -248,7 +244,7 @@ def stripe_success(request):
     except Exception as e:
         logger.error(f"❌ Email failed: {e}")
 
-    return render(request, "movies/payment_success.html", {"booking": booking})
+    return render(request, "movies/payment_success.html", {"booking": booking, "seat_numbers": seat_numbers})
 
 def stripe_cancel(request):
     return render(request, "movies/payment_failed.html")
