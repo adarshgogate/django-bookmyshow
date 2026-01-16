@@ -219,25 +219,30 @@ def stripe_success(request):
 
     # Send confirmation email via SendGrid SDK (v3.6.5 syntax)
     try:
-        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-        from_email = Email(settings.DEFAULT_FROM_EMAIL)
-        to_email = Email(booking.user.email)
+        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to_email = booking.user.email
         subject = "Booking Confirmed"
-        content = Content(
-        "text/html",
-        f"""
-        <h2>🎬 Booking Confirmation</h2>
-        <p>Hi {booking.user.first_name},</p>
-        <p>Your booking for <b>{booking.movie.name}</b> at <b>{booking.theater.name}</b> is confirmed.</p>
-        <p><b>Seats:</b> {seat_numbers}</p>
-        <p>Thank you for choosing BookMySeat.</p>
-        <p><i>📩 Your confirmation email will arrive shortly. 
-        If you don’t see it in your inbox, please check your Spam or Promotions folder 
-        and mark it as “Not Spam”.</i></p>
+
+        html_content = f"""
+            <h2>🎬 Booking Confirmation</h2>
+            <p>Hi {booking.user.first_name},</p>
+            <p>Your booking for <b>{booking.movie.name}</b> at <b>{booking.theater.name}</b> is confirmed.</p>
+            <p><b>Seats:</b> {seat_numbers}</p>
+            <p>Thank you for choosing <b>BookMySeat</b>.</p>
+            <p><i>📩 Your confirmation email will arrive shortly. 
+            If you don’t see it in your inbox, please check your Spam or Promotions folder 
+            and mark it as “Not Spam”.</i></p>
         """
+
+        mail = Mail(
+            from_email=from_email,
+            to_emails=to_email,
+            subject=subject,
+            html_content=html_content
         )
-        mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
+
+        response = sg.send(mail)
         logger.info(f"✅ Email sent to {booking.user.email}, status {response.status_code}")
 
     except Exception as e:
