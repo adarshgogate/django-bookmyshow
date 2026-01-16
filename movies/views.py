@@ -224,18 +224,22 @@ def stripe_success(request):
         to_email = Email(booking.user.email)
         subject = "Booking Confirmed"
         content = Content(
-            "text/html",
-            f"""
-            <h2>🎬 Booking Confirmation</h2>
-            <p>Hi {booking.user.first_name},</p>
-            <p>Your booking for <b>{booking.movie.name}</b> at <b>{booking.theater.name}</b> is confirmed.</p>
-            <p><b>Seats:</b> {seat_numbers}</p>
-            <p>Thank you for choosing BookMySeat.</p>
-            """
+        "text/html",
+        f"""
+        <h2>🎬 Booking Confirmation</h2>
+        <p>Hi {booking.user.first_name},</p>
+        <p>Your booking for <b>{booking.movie.name}</b> at <b>{booking.theater.name}</b> is confirmed.</p>
+        <p><b>Seats:</b> {seat_numbers}</p>
+        <p>Thank you for choosing BookMySeat.</p>
+        <p><i>📩 Your confirmation email will arrive shortly. 
+        If you don’t see it in your inbox, please check your Spam or Promotions folder 
+        and mark it as “Not Spam”.</i></p>
+        """
         )
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         logger.info(f"✅ Email sent to {booking.user.email}, status {response.status_code}")
+
     except Exception as e:
         logger.error(f"❌ Email failed: {e}")
 
