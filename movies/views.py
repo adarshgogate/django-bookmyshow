@@ -232,7 +232,7 @@ def stripe_success(request):
         """
 
         mail = Mail(
-            from_email=from_email,
+            from_email = settings.DEFAULT_FROM_EMAIL,
             to_emails=to_email,
             subject=subject,
             html_content=html_content
